@@ -67,7 +67,7 @@ void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
     
-  return;
+  //return;
   m_logger << DEBUG << "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
   m_logger << DEBUG << "isData = " << isData << LQLogger::endmsg;
    
@@ -86,7 +86,7 @@ void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
 
    float pileup_reweight=(1.0);
    if (!k_isdata) {   pileup_reweight = TempPileupWeight();}
-     
+   
    
    TString dimuon_trigmuon_trig1="HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v";
 
