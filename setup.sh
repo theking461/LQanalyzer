@@ -10,6 +10,7 @@
 ##################################################################################
 
 # Greet the user
+<<<<<<< HEAD
 
 echo "Setting up environment for compiling/running CATAnalzer with SKTree"
 
@@ -48,6 +49,11 @@ then
     fi
 fi
 
+=======
+echo "This is master branch: please checkout a tag: FOr latest tag see https://twiki.cern.ch/twiki/bin/viewauth/CMS/SNULQNtuples"
+exit 1
+echo "Setting up environment for compiling/running LQAnalzer with SKTree"
+>>>>>>> 1853d41bb6b94a74b3b1acca28451637b90edd0a
 
 if [ $LQANALYZER_DIR ]; then
     echo LQANALYZER_DIR is already defined, use a clean shell
