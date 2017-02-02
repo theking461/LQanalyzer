@@ -12,6 +12,7 @@ class SignalPlotsMM;
 class SignalPlotsEM;
 class TriLeptonPlots;
 class HNpairPlotsMM;
+class HNpairPlotsEE;
 class EventBase;
 
 #include "BaseSelection.h"
@@ -152,7 +153,7 @@ class AnalyzerCore : public LQCycleBase {
   vector<TLorentzVector> MakeTLorentz( vector<snu::KMuon> mu);
   vector<TLorentzVector> MakeTLorentz( vector<snu::KJet> jet);
   // enum for plotting functions/classes
-  enum histtype {muhist, elhist, jethist, sighist_ee, sighist_mm, sighist_em, trilephist, hnpairmm};
+  enum histtype {muhist, elhist, jethist, sighist_ee, sighist_mm, sighist_em, trilephist, hnpairmm, hnpairee};
   
   
   //
@@ -244,6 +245,7 @@ class AnalyzerCore : public LQCycleBase {
   //// Making cleaver hist maps
   map<TString, TriLeptonPlots*> mapCLhistTriLep;
   map<TString, HNpairPlotsMM*> mapCLhistHNpairMM;
+  map<TString, HNpairPlotsEE*> mapCLhistHNpairEE;
   map<TString, SignalPlotsEE*> mapCLhistSigEE;
   map<TString, SignalPlotsMM*> mapCLhistSigMM;
   map<TString, SignalPlotsEM*> mapCLhistSigEM;

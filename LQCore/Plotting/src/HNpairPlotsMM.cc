@@ -54,24 +54,24 @@ HNpairPlotsMM::HNpairPlotsMM(TString name): StdPlots(name){
   //OS SR
   map_sig["h_lljjjjmass_OS"]          =     new TH1D("h_OS_lljjjjmass_"          + name,"Invariant mass of di-lepton and leading four jets",5000,0,5000);
   map_sig["h_lljjjjpt_OS"]            =     new TH1D("h_OS_lljjjjpt_"          + name,"pt of di-lepton and leading four jets",5000,0,5000);
-  map_sig["h_lljjjjeta_OS"]           =     new TH1D("h_OS_lljjjjeta_"          + name,"#eta distribution of di-lepton and leading four jets",200,-5,5);
+  map_sig["h_lljjjjeta_OS"]           =     new TH1D("h_OS_lljjjjeta_"          + name,"#eta distribution of di-lepton and leading four jets",400,-10,10);
   map_sig["h_leadingljjmass_OS"]      =     new TH1D("h_OS_leadingljjmass_"          + name,"Invariant mass of leading ljj",5000,0,5000);
   map_sig["h_secondljjmass_OS"]       =     new TH1D("h_OS_secondljjmass_"          + name,"Invariant mass of second ljj",5000,0,5000);
   map_sig["h_leadingljjpt_OS"]        =     new TH1D("h_OS_leadingljjpt_"          + name,"pt of leading ljj",5000,0,5000);
   map_sig["h_secondljjpt_OS"]         =     new TH1D("h_OS_secondljjpt_"          + name,"pt of second ljj",5000,0,5000);
-  map_sig["h_leadingljjeta_OS"]       =     new TH1D("h_OS_leadingljjeta_"          + name,"#eta distribution of leading ljj",120,-3,3);
-  map_sig["h_secondljjeta_OS"]        =     new TH1D("h_OS_secondljjeta_"          + name,"#eta distribution of second ljj",120,-3,3);
+  map_sig["h_leadingljjeta_OS"]       =     new TH1D("h_OS_leadingljjeta_"          + name,"#eta distribution of leading ljj",400,-10,10);
+  map_sig["h_secondljjeta_OS"]        =     new TH1D("h_OS_secondljjeta_"          + name,"#eta distribution of second ljj",400,-10,10);
   
   //SS SR
   map_sig["h_lljjjjmass_SS"]          =     new TH1D("h_SS_lljjjjmass_"          + name,"Invariant mass of di-lepton and leading four jets",5000,0,5000);
   map_sig["h_lljjjjpt_SS"]            =     new TH1D("h_SS_lljjjjpt_"          + name,"pt of di-lepton and leading four jets",5000,0,5000);
-  map_sig["h_lljjjjeta_SS"]           =     new TH1D("h_SS_lljjjjeta_"          + name,"#eta distribution of di-lepton and leading four jets",200,-5,5);
+  map_sig["h_lljjjjeta_SS"]           =     new TH1D("h_SS_lljjjjeta_"          + name,"#eta distribution of di-lepton and leading four jets",400,-10,10);
   map_sig["h_leadingljjmass_SS"]      =     new TH1D("h_SS_leadingljjmass_"          + name,"Invariant mass of leading ljj",5000,0,5000);
   map_sig["h_secondljjmass_SS"]       =     new TH1D("h_SS_secondljjmass_"          + name,"Invariant mass of second ljj",5000,0,5000);
   map_sig["h_leadingljjpt_SS"]        =     new TH1D("h_SS_leadingljjpt_"          + name,"pt of leading ljj",5000,0,5000);
   map_sig["h_secondljjpt_SS"]         =     new TH1D("h_SS_secondljjpt_"          + name,"pt of second ljj",5000,0,5000);
-  map_sig["h_leadingljjeta_SS"]       =     new TH1D("h_SS_leadingljjeta_"          + name,"#eta distribution of leading ljj",120,-3,3);
-  map_sig["h_secondljjeta_SS"]        =     new TH1D("h_SS_secondljjeta_"          + name,"#eta distribution of second ljj",120,-3,3);
+  map_sig["h_leadingljjeta_SS"]       =     new TH1D("h_SS_leadingljjeta_"          + name,"#eta distribution of leading ljj",40,-10,10);
+  map_sig["h_secondljjeta_SS"]        =     new TH1D("h_SS_secondljjeta_"          + name,"#eta distribution of second ljj",40,-10,10);
 
   
 
@@ -97,10 +97,15 @@ void HNpairPlotsMM::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::ve
   
   if(muons.size() != 2) return;
   if(electrons.size() != 0) return;
+  
+  if( (muons[0] + muons[1]).M() < 10 ) return;
+
+  if( muons[1].Pt() < 20 ) return; 
+  
   //cout << "n_lepton cut pass" << endl;
   //cout << "Nmuon : " << muons.size() << endl;
   //cout << "Ne : " << electrons.size() << endl;
-
+  
   snu::KParticle HN_1, HN_2;
   snu::KParticle leading_HN, second_HN;
   //reconstruct HN pair

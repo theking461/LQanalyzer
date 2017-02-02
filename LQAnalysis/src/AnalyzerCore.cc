@@ -20,6 +20,7 @@
 #include "SignalPlotsEM.h"
 #include "TriLeptonPlots.h"
 #include "HNpairPlotsMM.h"
+#include "HNpairPlotsEE.h"
 
 //ROOT includes
 #include <TFile.h>
@@ -1257,6 +1258,11 @@ AnalyzerCore::~AnalyzerCore(){
   }
   mapCLhistHNpairMM.clear();
 
+  for(map<TString, HNpairPlotsEE*>::iterator it = mapCLhistHNpairEE.begin(); it != mapCLhistHNpairEE.end(); it++){
+    delete it->second;
+  }
+  mapCLhistHNpairEE.clear();
+
   for(map<TString,TNtupleD*>::iterator it = mapntp.begin(); it!= mapntp.end(); it++){ 
     delete it->second;
   }
@@ -1949,7 +1955,8 @@ void AnalyzerCore::MakeCleverHistograms(histtype type, TString clhistname ){
 
   if(type==trilephist)  mapCLhistTriLep[clhistname] = new TriLeptonPlots(clhistname);
   if(type==hnpairmm) mapCLhistHNpairMM[clhistname] = new HNpairPlotsMM(clhistname);
-    
+  if(type==hnpairee) mapCLhistHNpairEE[clhistname] = new HNpairPlotsEE(clhistname);
+
   return;
 }
 
@@ -2223,7 +2230,17 @@ void AnalyzerCore::FillCLHist(histtype type, TString hist, snu::KEvent ev,vector
       HNpairmmit->second->Fill(ev, muons, electrons, jets, w, nbjet);
     }
   }
+  if(type==hnpairee){
+    map<TString, HNpairPlotsEE*>::iterator HNpaireeit = mapCLhistHNpairEE.find(hist);
+    if(HNpaireeit !=mapCLhistHNpairEE.end()) HNpaireeit->second->Fill(ev, muons, electrons, jets, w, nbjet);
+    else {
+      mapCLhistHNpairEE[hist] = new HNpairPlotsEE(hist);
+      HNpaireeit = mapCLhistHNpairEE.find(hist);
+      HNpaireeit->second->Fill(ev, muons, electrons, jets, w, nbjet);
+    }
+  }
 }
+
 void AnalyzerCore::FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double w){
 
   if(type==trilephist){
@@ -2342,6 +2359,14 @@ void AnalyzerCore::WriteCLHists(){
     Dir = m_outputFile->mkdir(HNpairmmit->first);
     m_outputFile->cd( Dir->GetName() );
     HNpairmmit->second->Write();
+    m_outputFile->cd();
+  }
+
+  for(map<TString, HNpairPlotsEE*>::iterator HNpaireeit = mapCLhistHNpairEE.begin(); HNpaireeit != mapCLhistHNpairEE.end(); HNpaireeit++){
+
+    Dir = m_outputFile->mkdir(HNpaireeit->first);
+    m_outputFile->cd( Dir->GetName() );
+    HNpaireeit->second->Write();
     m_outputFile->cd();
   }
 
