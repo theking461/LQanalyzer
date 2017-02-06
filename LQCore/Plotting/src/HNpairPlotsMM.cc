@@ -32,7 +32,8 @@ HNpairPlotsMM::HNpairPlotsMM(TString name): StdPlots(name){
   map_sig["h_secondjet_pt_OS"]        =     new TH1D("h_OS_secondjet_pt_"           + name,"secondjet pt",60,0,300);
   map_sig["h_leadingjet_eta_OS"]      =     new TH1D("h_OS_leadingjet_eta_"          + name,"#eta distribution of leadingjet",120,-3,3);
   map_sig["h_secondjet_eta_OS"]       =     new TH1D("h_OS_secondjet_eta_"          + name,"#eta distribution of the secondjet",120,-3,3);
-  
+  map_sig["h_N_passed_events_OS"]     =     new TH1D("h_OS_N_passed_events_"           + name,"number of passed events",5,0,5);
+
   //SS CR
   map_sig["h_llmass_SS"]              =     new TH1D("h_SS_llmass_"          + name,"Invariant mass of the two leading ss leptons",100,0,500);
   map_sig["h_leadingLeptonPt_SS"]     =     new TH1D("h_SS_leadingLeptonPt_"   + name,"leading lepton pt",100,0,500);
@@ -50,7 +51,8 @@ HNpairPlotsMM::HNpairPlotsMM(TString name): StdPlots(name){
   map_sig["h_secondjet_pt_SS"]        =     new TH1D("h_SS_secondjet_pt_"           + name,"secondjet pt",60,0,300);
   map_sig["h_leadingjet_eta_SS"]      =     new TH1D("h_SS_leadingjet_eta_"          + name,"#eta distribution of leadingjet",120,-3,3);
   map_sig["h_secondjet_eta_SS"]       =     new TH1D("h_SS_secondjet_eta_"          + name,"#eta distribution of the secondjet",120,-3,3);
-  
+  map_sig["h_N_passed_events_SS"]     =     new TH1D("h_OS_N_passed_events_"           + name,"number of passed events",5,0,5);
+
   //OS SR
   map_sig["h_lljjjjmass_OS"]          =     new TH1D("h_OS_lljjjjmass_"          + name,"Invariant mass of di-lepton and leading four jets",5000,0,5000);
   map_sig["h_lljjjjpt_OS"]            =     new TH1D("h_OS_lljjjjpt_"          + name,"pt of di-lepton and leading four jets",5000,0,5000);
@@ -164,7 +166,8 @@ void HNpairPlotsMM::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::ve
     Fill("h_Nmuons_OS", muons.size(), weight);             
     Fill("h_Nelectrons_OS", electrons.size(), weight);         
     Fill("h_nVertices_OS", ev.nVertices(), weight);
-
+    Fill("h_N_passed_events_OS", 1., weight);
+    
     //cout << "OS not njet pass" << endl;
     if(jets.size() > 0){
       Fill("h_leadingjet_pt_OS", jets[0].Pt(), weight);      
@@ -213,6 +216,9 @@ void HNpairPlotsMM::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::ve
     Fill("h_Nmuons_SS", muons.size(), weight);
     Fill("h_Nelectrons_SS", electrons.size(), weight);
     Fill("h_nVertices_SS", ev.nVertices(), weight);
+    Fill("h_N_passed_events_SS", 1., weight);
+
+
     if(jets.size() > 0){
       Fill("h_leadingjet_pt_SS", jets[0].Pt(), weight);
       Fill("h_leadingjet_eta_SS", jets[0].Eta(), weight);

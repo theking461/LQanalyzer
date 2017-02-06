@@ -82,7 +82,7 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
   
-  FillHist("signal_eff", 1., 1., 0., 10., 10);
+  FillHist("signal_eff", 1., 1., 0., 10., 10); //after lepton skim
   
   //return;
   m_logger << DEBUG << "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
@@ -96,11 +96,15 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   ///#### CAT:::PassBasicEventCuts is updated: uses selections as described in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFilters: If you see this is out of date please comment
   if(!PassMETFilter()) return;     /// Initial event cuts :
   FillCutFlow("EventCut", weight);
+  FillHist("signal_eff", 2., 1., 0., 10., 10); //after PassMETFilter
+  
   
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
   
   if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; //// Make cut on event wrt vertex
+  FillHist("signal_eff", 3., 1., 0., 10., 10); //after good primary vtx cut
   
+
   TString dimuon_trigmuon_trig1="HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v";
   
   
@@ -110,7 +114,6 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   //if(!PassTrigger(triggerslist, prescale)) return;
   //FillCutFlow("TriggerCut", weight);
   
-  //FillHist("signal_eff", 1., 1., 0., 10., 10);
   
   // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
   /* // #### CAT::: trigger matching information is stored for muons and electrons for:
@@ -159,10 +162,12 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   eventbase->GetTruthSel()->Selection(truthColl);
   
   cout << "truth " << truthColl.size() << endl;
-
-  //bool trig_pass = PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  bool trig_pass = PassTrigger("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
-  if(!trig_pass) return;
+  
+  bool trig_pass_1 = PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  bool trig_pass_2 = PassTrigger("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+  
+  if(!trig_pass_1 && !trig_pass_2) return;
+  FillHist("signal_eff", 4., 1., 0., 10., 10); //after tirgger
   
   float trigger_sf(1.);
   float id_iso_sf(1.);
@@ -191,9 +196,17 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   bool prompt_match = false;
   int n_bjet = NBJet(jets);
   
-  if(trig_pass) FillHist("signal_eff", 2., 1., 0., 10., 10); 
+  //if(trig_pass) FillHist("signal_eff", 2., 1., 0., 10., 10); 
+
+  bool run_signal = true;
+  if(run_signal){
+    current_weight = 1.;
+    pileup_reweight = 1.;
+  }
   
-  
+  if(muons.size() == 2 && muons.at(1).Pt() > 20 ){
+    FillHist("signal_eff", 5., 1., 0., 10., 10); //N(muon) == 2 where pt > 20 GeV
+  }
   
   FillCLHist(hnpairmm,"basic_PU", eventbase->GetEvent(), muons, electrons, jets, current_weight * pileup_reweight, n_bjet);
   FillCLHist(hnpairmm,"basic_tempPU", eventbase->GetEvent(), muons, electrons,jets, current_weight * temp_pileup_reweight, n_bjet);

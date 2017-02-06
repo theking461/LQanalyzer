@@ -1,0 +1,1 @@
+sktree -a HN_pair_MM -list hnpair_mm_private -s SKTree_LeptonSkim -q fastq
