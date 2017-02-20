@@ -116,7 +116,7 @@ void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
    std::vector<snu::KJet> jets =   GetJets("JET_HN");
    int nbjet = NBJet(GetJets("JET_HN"));
    std::vector<snu::KMuon> muons =GetMuons("MUON_HN_TIGHT",false); 
-
+   
    bool trig_pass= PassTriggerOR(trignames);
 
 
