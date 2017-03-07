@@ -18,7 +18,7 @@ using namespace std;
 MCDataCorrections::MCDataCorrections() {
   
   corr_isdata=false;
-  k_mcperiod=-1;
+  k_period=-1;
 
   string lqdir = getenv("LQANALYZER_DIR");
   rc =  new RoccoR(lqdir + "/data/rochester/80X/rcdata.2016.v3");  
@@ -30,7 +30,8 @@ MCDataCorrections::MCDataCorrections() {
   string pileupdir = getenv("PILEUPFILEDIR");
 
   FillCorrectionHists();
-  reweightPU = new Reweight((pileupdir + "/" + getenv("PUFILE")).c_str());       
+  //reweightPU = new Reweight((pileupdir + "/" + getenv("PUFILE")).c_str());       
+
 }
 
 
@@ -42,14 +43,14 @@ MCDataCorrections::MCDataCorrections(bool isdata) {
 
 MCDataCorrections::~MCDataCorrections(){
   delete rc;
-  delete reweightPU;
+  ///  delete reweightPU;
   CorrectionMap.clear();
   CorrectionMapGraph.clear();
 }
 
 
-void MCDataCorrections::SetMCPeriod(int mcperiod){
-  k_mcperiod=mcperiod;
+void MCDataCorrections::SetPeriod(int period){
+  k_period=period;
 }
 
 void MCDataCorrections::SetIsData(bool isdata){
@@ -141,7 +142,7 @@ double MCDataCorrections::MuonISOScaleFactor(TString muid, vector<snu::KMuon> mu
   // ref https://indico.cern.ch/event/595070/contributions/2405098/attachments/1388788/2114715/TnPIso12Dic2016.pdf 
 
   TString tag = "";
-  if(k_mcperiod < 6) tag = "_BCDEF";
+  if(k_period < 6) tag = "_BCDEF";
   else tag = "_GH";
 
 
@@ -171,7 +172,7 @@ double MCDataCorrections::MuonScaleFactor(TString muid, vector<snu::KMuon> mu,in
   // ref https://indico.cern.ch/event/595070/contributions/2405095/attachments/1388822/2114847/MC_12_12_2016.pdf
 
   TString tag = "";
-  if(k_mcperiod < 6) tag = "_BCDEF";
+  if(k_period < 6) tag = "_BCDEF";
   else tag = "_GH";
 
   double min_pt = 20., max_pt = 120.;
@@ -204,18 +205,55 @@ double MCDataCorrections::TriggerScaleFactor( vector<snu::KElectron> el, vector<
   /// Currently only muon scale factors (single) are added by pog
   
   if(corr_isdata) return 1.;
-  if(mu.size() == 1){
 
-    TString s_ptthreshold="";
-    float f1_ptthreshold=-999.;
-    float f2_ptthreshold=-999.;
+  TString s_ptthreshold="";
+  float f1_ptthreshold=-999.;
+  float f2_ptthreshold=-999.;
+  TString DataEffSrcName="", MCEffSrcName="";
 
+  
+  TString tag = "";
+  if(k_period < 6) tag = "_BCDEF";
+  else tag = "_GH";
+  
+
+  if(trigname == "HLT_Ele25_eta2p1_WPTight_Gsf" || trigname == "HLT_Ele27_WPTight_Gsf" || trigname == "HLT_Ele32_eta2p1_WPTight_Gsf"){
+    //https://indico.cern.ch/event/604912/contributions/2490011/attachments/1418869/2173471/2017.02.27_EGM_Ele25-and-Ele27-trigger-SF_v1.pdf
+    // HLT_Ele27_WPTight_Gsf and HLT_Ele25_eta2p1_WPTight_Gsf are unprescaled
+    //https://indico.cern.ch/event/604911/contributions/2474230/attachments/1411693/2159538/2017.02.13_EGM_Electron-trigger-SF-2016_v1.pdf
+    if(trigname == "HLT_Ele32_eta2p1_WPTight_Gsf") {
+      s_ptthreshold="32";
+      f1_ptthreshold = 35.;
+    }
+    else if(trigname == "HLT_Ele25_eta2p1_WPTight_Gsf"){
+      s_ptthreshold="25";
+      f1_ptthreshold = 25.;
+    }
+    else {
+      s_ptthreshold="27";
+      f1_ptthreshold = 28.;
+    }
+    f2_ptthreshold = 200.;
     
-    TString tag = "";
-    if(k_mcperiod < 6) tag = "_BCDEF";
-    else tag = "_GH";
+    for(unsigned int iel = 0; iel < el.size(); iel++){
+      if(!el.at(iel).TriggerMatched(trigname)) continue;
+      float elpt = el.at(iel).Pt();
+      if(elpt >  f2_ptthreshold) elpt = (f2_ptthreshold-1.);
+      if(elpt < f1_ptthreshold) return 1.;
+      if(CheckCorrectionHist(("ELECTRON_ELE"+s_ptthreshold+"_TRIGGER_SF" + tag).Data())){
+	float sferr = double(direction)*GetCorrectionHist(("ELECTRON_ELE"+s_ptthreshold+"_TRIGGER_SF" + tag).Data())->GetBinError(GetCorrectionHist(("ELECTRON_ELE"+s_ptthreshold+"_TRIGGER_SF" + tag).Data())->FindBin( elpt,  fabs(el.at(iel).Eta())));
+														 
+	return  (1. + sferr)*GetCorrectionHist(("ELECTRON_ELE"+s_ptthreshold+"_TRIGGER_SF" + tag).Data())->GetBinContent(GetCorrectionHist(("ELECTRON_ELE"+s_ptthreshold+"_TRIGGER_SF" + tag).Data())->FindBin( elpt,  fabs(el.at(0).Eta())));
+      }
+    }// el loop
+    return 1.;
+  }
+  if(trigname == "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v"){
+    //https://indico.cern.ch/event/604912/contributions/2490014/attachments/1418899/2173461/170227_wertz.pdf
     
-    if (trigname.Contains("HLT_IsoMu") || trigname.Contains("HLT_IsoTkMu"))  {
+  }
+  if(trigname.Contains("HLT_IsoMu") || trigname.Contains("HLT_IsoTkMu")){
+    if(mu.size()==1){
       if (trigname.Contains("24")){
 	  s_ptthreshold = "24";
 	  f1_ptthreshold = 24.;
@@ -232,14 +270,53 @@ double MCDataCorrections::TriggerScaleFactor( vector<snu::KElectron> el, vector<
       
       float mupt=mu.at(0).MiniAODPt();
       if(mupt >  f2_ptthreshold) mupt = (f2_ptthreshold-1.);
-      if(mupt < f1_ptthreshold) mupt = (f1_ptthreshold - 1.);
+      if(mupt < f1_ptthreshold) return 1.;
       if(CheckCorrectionHist(("MUON_MU"+s_ptthreshold+"_TRIGGER"+tag).Data())){
 	float sferr = double(direction)*GetCorrectionHist(("MUON_MU"+s_ptthreshold+"_TRIGGER"+tag).Data())->GetBinError(GetCorrectionHist(("MUON_MU"+s_ptthreshold+"_TRIGGER"+tag).Data())->FindBin( fabs(mu.at(0).Eta()), mupt) );
 	return  (1. + sferr)*GetCorrectionHist(("MUON_MU"+s_ptthreshold+"_TRIGGER"+tag).Data())->GetBinContent( GetCorrectionHist(("MUON_MU"+s_ptthreshold+"_TRIGGER"+tag).Data())->FindBin(  fabs(mu.at(0).Eta()), mupt) );
       }
-    }
-  }
+    }//One Muon case to SinglMuTrig Ends
+    else if(mu.size()>=2){
+      if(trigname.Contains("24")){
+        s_ptthreshold  ="24";
+        f1_ptthreshold = 24.;
+        f2_ptthreshold = 500.;
+      }
+      DataEffSrcName = "MUON_MU"+s_ptthreshold+"_TRIGGER_DATA_EFF"+tag;
+      MCEffSrcName   = "MUON_MU"+s_ptthreshold+"_TRIGGER_MC_EFF"+tag;
+      if( !( CheckCorrectionHist(DataEffSrcName) && CheckCorrectionHist(MCEffSrcName) ) ) return 0.;
+
+      std::vector<float> muptColl;
+        for(int i=0; i<mu.size(); i++){
+          float mupt=mu.at(i).MiniAODPt();
+          if     (mupt>f2_ptthreshold){ muptColl.push_back(f2_ptthreshold - 1.); }
+          else if(mupt<f1_ptthreshold){ muptColl.push_back(f1_ptthreshold - 1.); }
+          else                          muptColl.push_back(mupt);
+        }
+      std::vector<float> muetaColl;
+        for(int i=0; i<mu.size(); i++){ muetaColl.push_back(mu.at(i).Eta()); };
+
+      std::vector<float> dataeffColl;
+        for(int i=0; i<mu.size(); i++){ dataeffColl.push_back( GetCorrectionHist(DataEffSrcName)->GetBinContent( GetCorrectionHist(DataEffSrcName)->FindBin(muptColl.at(i), fabs(muetaColl.at(i))) ) ); };
+
+      std::vector<float> mceffColl;
+        for(int i=0; i<mu.size(); i++){ mceffColl.push_back( GetCorrectionHist(MCEffSrcName)->GetBinContent( GetCorrectionHist(MCEffSrcName)->FindBin(muptColl.at(i), fabs(muetaColl.at(i))) ) ); };
+        
+      float DataFailProb =1.; for(int i=0; i<mu.size(); i++){ DataFailProb *= (1.-dataeffColl.at(i)); };
+      float MCFailProb   =1.; for(int i=0; i<mu.size(); i++){ MCFailProb   *= (1.-mceffColl.at(i));   };
+      
+      if((1.-MCFailProb)==0.) return 0.;
+      float SF = (1.-DataFailProb)/(1.-MCFailProb);
+
+      return SF;
+      
+
+    }//2 Muon case to SinglMuTrig ends.
+  }//SingleMuTrig case ends.
+
   return 1.;
+
+
 }
 
 double MCDataCorrections::ElectronScaleFactor( TString elid, vector<snu::KElectron> el, int sys){
@@ -288,13 +365,14 @@ double MCDataCorrections::ElectronRecoScaleFactor(vector<snu::KElectron> el){
 float MCDataCorrections::UserPileupWeight(snu::KEvent ev){
   
   if(corr_isdata) return 1.;
-  return reweightPU->GetWeight(ev.nVertices(),TString(getenv("CATVERSION")));
+  return 1.;
+  //return reweightPU->GetWeight(ev.nVertices(),TString(getenv("CATVERSION")));
 }
 
 
 float MCDataCorrections::PileupWeightByPeriod(snu::KEvent ev){
-  cout << "k_mcperiod = " << k_mcperiod << endl;
-  return ev.PeriodPileUpWeight(k_mcperiod);
+
+  return ev.PeriodPileUpWeight(k_period);
   
 }
 
@@ -355,6 +433,9 @@ TH2F* MCDataCorrections::GetCorrectionHist(TString label){
 
 void MCDataCorrections::CorrectMuonMomentum(vector<snu::KMuon>& k_muons, vector<snu::KTruth> truth){
   
+
+  /// This function only works to correct muons if rochester correction was not applied in  selection code
+
   for(std::vector<snu::KMuon>::iterator it = k_muons.begin(); it != k_muons.end(); it++){
     double scalefactor = 1.;
     if(it->IsRochesterCorrected()) return;
@@ -373,6 +454,8 @@ void MCDataCorrections::CorrectMuonMomentum(vector<snu::KMuon>& k_muons, vector<
 	if ( genpt> 0.)  scalefactor = rc->kScaleFromGenMC(float(it->Charge()), it->Pt(), it->Eta(), it->Phi(), it->ActiveLayer(), genpt, u1,0, 0);
 	else scalefactor = rc->kScaleAndSmearMC(float(it->Charge()), it->Pt(), it->Eta(), it->Phi(), it->ActiveLayer(), u1, u2, 0,0);
     }
+    it->SetRelIso(0.3,it->RelMiniAODIso03()/scalefactor);
+    it->SetRelIso(0.4,it->RelMiniAODIso04()/scalefactor);
     it->SetPtEtaPhiM( (scalefactor*it->Pt() ), it->Eta(), it->Phi(), it->M());
   }  
   

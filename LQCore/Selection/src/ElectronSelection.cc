@@ -108,6 +108,7 @@ void ElectronSelection::Selection(std::vector<KElectron>& leptonColl , bool m_de
     float reliso(0.);
     if     (apply_relisocut && RelIsoType.Contains("Default"))    reliso=el->PFRelIso(0.3); 
     else if(apply_relisocut && RelIsoType.Contains("PFRelIso04")) reliso=el->PFRelIso(0.4); 
+    else                                                          reliso=el->PFRelIso(0.3); 
 
     if(apply_ptcut && !(el->Pt() >= pt_cut_min && el->Pt() < pt_cut_max)){
       pass_selection = false;
@@ -187,6 +188,9 @@ bool ElectronSelection::PassUserID(TString id, snu::KElectron el){
   float dzmax_b = AccessFloatMap("|dzmax_b|",id);
   float dzmax_e = AccessFloatMap("|dzmax_e|",id);
 
+  float dxysigmax = AccessFloatMap("|dxysigmax|",id);
+  float dxysigmin = AccessFloatMap("|dxysigmin|",id);
+
   bool checkisloose= (CheckCutString("IsLoose(POG)",id));
   bool checkisveto = (CheckCutString("IsVeto(POG)",id));
   bool checkismedium = (CheckCutString("IsMedium(POG)",id));
@@ -194,7 +198,10 @@ bool ElectronSelection::PassUserID(TString id, snu::KElectron el){
 
   bool checkchargeconsy = (CheckCutString("GsfCtfScPix",id));
   bool convveto = (CheckCutString("convveto",id));
+  bool checkdxysigmin  = CheckCutFloat("|dxysigmin|",id);
+  bool checkdxysigmax  = CheckCutFloat("|dxysigmax|",id);
   
+
 
   LeptonRelIso = el.PFRelIso(0.3);
   bool pass_selection=true;
@@ -230,6 +237,9 @@ bool ElectronSelection::PassUserID(TString id, snu::KElectron el){
   
   if(convveto&& (!el.PassesConvVeto()) ){pass_selection = false;if(debug){ cout << "Fail convveto" << endl;}}
   if(checkchargeconsy &&  !el.GsfCtfScPixChargeConsistency()) {pass_selection = false;if(debug){ cout << "Fail charge" << endl;}}
+
+  if(checkdxysigmin &&(fabs(el.dxySig()) < dxysigmin)) { pass_selection = false;if(debug){ cout << "Fail dsximin"  << endl;}}
+  if(checkdxysigmax &&(fabs(el.dxySig()) > dxysigmax)) { pass_selection = false;if(debug){ cout << "Fail dsigmax"  << endl;}}
 
   if(fabs(el.SCEta())<1.479 ){  
 
@@ -274,10 +284,10 @@ bool ElectronSelection::PassID(snu::KElectron el, ID id){
   bool pass_loose_noiso  = false;
   bool pass_veto_noiso   = false;
 
-  if     (snuid >= 1000) pass_tight_noiso  = true;
-  else if(snuid >= 100 ) pass_medium_noiso = true;
-  else if(snuid >= 10  ) pass_loose_noiso  = true;
-  else if(snuid >= 1   ) pass_veto_noiso   = true;
+  if(snuid >= 1000) pass_tight_noiso  = true;
+  if(snuid >= 100 ) pass_medium_noiso = true;
+  if(snuid >= 10  ) pass_loose_noiso  = true;
+  if(snuid >= 1   ) pass_veto_noiso   = true;
 
 
   if(id == ELECTRON_POG_VETO   && !pass_veto_noiso)   {pass_selection = false; if(debug){ cout << "Failveto " << endl;}}
