@@ -51,7 +51,10 @@ HN_pair_MM::HN_pair_MM() :  AnalyzerCore(), out_muons(0)  {
   MakeCleverHistograms(hnpairmm,"CR_3_tempPU");
   MakeCleverHistograms(hnpairmm,"CR_4_PU");
   MakeCleverHistograms(hnpairmm,"CR_4_tempPU");
+  MakeCleverHistograms(hnpairmm,"CR_5_PU");
+  MakeCleverHistograms(hnpairmm,"CR_5_tempPU");
   MakeCleverHistograms(hnpairmm,"SR_1_PU");
+  
   
 }
 
@@ -158,7 +161,7 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
     muon_id = "MUON_HN_TRI_TIGHT";
   }
 
-
+  
   //std::vector<snu::KMuon> muons = GetMuons("MUON_HN_TIGHT",false);
   std::vector<snu::KMuon> muons = GetMuons(muon_id,false);
   std::vector<snu::KMuon> muons_veto = GetMuons("MUON_HN_VETO",false);
@@ -200,7 +203,7 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   float pileup_reweight(1.);
   
   if(!isData){
-    CorrectMuonMomentum(muons);
+    //CorrectMuonMomentum(muons);
     id_iso_sf =  mcdata_correction -> MuonScaleFactor(muon_id, muons,0);
     id_iso_sf *= mcdata_correction -> MuonISOScaleFactor(muon_id, muons,0);
     id_iso_sf *= mcdata_correction -> MuonTrackingEffScaleFactor(muons);
@@ -222,7 +225,7 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   
   //if(trig_pass) FillHist("signal_eff", 2., 1., 0., 10., 10); 
 
-  bool run_signal = true;
+  bool run_signal = false;
   if(run_signal){
     current_weight = 1.;
     pileup_reweight = 1.;
@@ -258,7 +261,12 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
       FillCLHist(hnpairmm,"CR_4_tempPU", eventbase->GetEvent(), muons, electrons,jets, current_weight * temp_pileup_reweight, n_bjet);
     }
   }
-  
+
+  if(jets.size() == 0){
+      FillCLHist(hnpairmm,"CR_5_PU", eventbase->GetEvent(), muons, electrons,jets, current_weight * pileup_reweight, n_bjet);
+      FillCLHist(hnpairmm,"CR_5_tempPU", eventbase->GetEvent(), muons, electrons,jets, current_weight * temp_pileup_reweight, n_bjet);
+  }
+
   if(MET < 75 && muons.size() > 0) {
     if(muons.at(0).Pt() > 50){
       FillCLHist(hnpairmm,"SR_1_PU", eventbase->GetEvent(), muons, electrons,jets, current_weight * pileup_reweight, n_bjet);

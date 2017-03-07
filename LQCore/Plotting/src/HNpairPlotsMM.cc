@@ -100,6 +100,10 @@ void HNpairPlotsMM::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::ve
   //cout << "n_lepton cut pass" << endl;
   //cout << "Nmuon : " << muons.size() << endl;
   //cout << "Ne : " << electrons.size() << endl;
+  
+  if(muons[0].Pt() < 20 || muons[1].Pt() < 20) return;
+  if((muons[0]+muons[1]).M() < 10 ) return;
+  
 
   snu::KParticle HN_1, HN_2;
   snu::KParticle leading_HN, second_HN;
