@@ -53,6 +53,8 @@ HN_pair_MM::HN_pair_MM() :  AnalyzerCore(), out_muons(0)  {
   MakeCleverHistograms(hnpairmm,"CR_4_tempPU");
   MakeCleverHistograms(hnpairmm,"CR_5_PU");
   MakeCleverHistograms(hnpairmm,"CR_5_tempPU");
+  MakeCleverHistograms(hnpairmm,"CR_6_PU");
+  MakeCleverHistograms(hnpairmm,"CR_6_tempPU");
   MakeCleverHistograms(hnpairmm,"SR_1_PU");
   
   
@@ -143,29 +145,32 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   
   m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
   
+  //////////////////jet selection/////////////////////////////////
   std::vector<snu::KJet> jets =   GetJets("JET_HN");
   int nbjet = NBJet(GetJets("JET_HN"));
   FillHist("Njets", jets.size() ,weight, 0. , 5., 5);
   
-  TString muon_id = "MUON_POG_TIGHT";
+  
+  //////////////////muon selection/////////////////////////////////
+  //TString muon_id = "MUON_POG_TIGHT";
+  TString muon_id = "MUON_HN_TRI_TIGHT";
   BaseSelection::ID muid = BaseSelection::MUON_POG_TIGHT;
   //TString muid = "MUON_POG_TIGHT";
   if(k_running_nonprompt) {
     muid= BaseSelection::MUON_POG_LOOSE;
-    muon_id = "MUON_POG_LOOSE";
+    //muon_id = "MUON_POG_LOOSE";
+    muon_id = "MUON_HN_TRI_LOOSE";
   }
-
   bool running_tri_mu = true;
   if(running_tri_mu){
     //muid= BaseSelection::MUON_HN_TRI_TIGHT;
     muon_id = "MUON_HN_TRI_TIGHT";
   }
-
-  
   //std::vector<snu::KMuon> muons = GetMuons("MUON_HN_TIGHT",false);
   std::vector<snu::KMuon> muons = GetMuons(muon_id,false);
   std::vector<snu::KMuon> muons_veto = GetMuons("MUON_HN_VETO",false);
   
+  //////////////////electron selection/////////////////////////////////
   /// can call POGVeto/POGLoose/POGMedium/POGTight/ HNVeto/HNLoose/HNTight/NoCut/NoCutPtEta 
   std::vector<snu::KElectron> electrons = GetElectrons("ELECTRON_POG_TIGHT");
   std::vector<snu::KElectron> electrons_veto = GetElectrons("ELECTRON_HN_VETO");
@@ -185,8 +190,8 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   trignames.push_back(dimuon_trigmuon_trig3);
   trignames.push_back(dimuon_trigmuon_trig4);
   bool trig_pass= PassTriggerOR(trignames);
-
-
+  
+  
   bool mu50_pass = PassTrigger("HLT_Mu50_v");
   if(mu50_pass) FillHist("Mu50_eff", 1.5, 1., 0., 10., 10);
   if(mu50_pass || trig_pass) FillHist("Mu50_and_dimu_eff", 1.5, 1., 0., 10., 10);
@@ -218,6 +223,13 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
     current_weight = weight * id_iso_sf * trigger_ps * trigger_sf;
     //current_weight = weight * id_iso_sf * trigger_sf;
   }
+  
+  double weight_err = 0.;
+  if(k_running_nonprompt){
+    current_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muons, "MUON_HN_TRI_TIGHT", 2, electrons, "ELECTRON_HN_TIGHT", 0);
+    weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muons, "MUON_HN_TRI_TIGHT", 2, electrons, "ELECTRON_HN_TIGHT", 0);
+  }
+
   
   float MET = eventbase->GetEvent().PFMET();
   bool prompt_match = false;
@@ -267,6 +279,12 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
       FillCLHist(hnpairmm,"CR_5_tempPU", eventbase->GetEvent(), muons, electrons,jets, current_weight * temp_pileup_reweight, n_bjet);
   }
 
+  if(jets.size() == 1){
+    FillCLHist(hnpairmm,"CR_6_PU", eventbase->GetEvent(), muons, electrons,jets, current_weight * pileup_reweight, n_bjet);
+    FillCLHist(hnpairmm,"CR_6_tempPU", eventbase->GetEvent(), muons, electrons,jets, current_weight * temp_pileup_reweight, n_bjet);
+  }
+  
+
   if(MET < 75 && muons.size() > 0) {
     if(muons.at(0).Pt() > 50){
       FillCLHist(hnpairmm,"SR_1_PU", eventbase->GetEvent(), muons, electrons,jets, current_weight * pileup_reweight, n_bjet);
@@ -309,7 +327,7 @@ void HN_pair_MM::BeginCycle() throw( LQError ){
 HN_pair_MM::~HN_pair_MM() {
   
   Message("In HN_pair_MM Destructor" , INFO);
-  if(!k_isdata)delete reweightPU;
+  //if(!k_isdata)delete reweightPU;
   
 }
 
