@@ -22,6 +22,8 @@ class HNDiElectron : public AnalyzerCore {
   void FillEventCutFlow(TString cut, TString label , float weight);
 
 
+  void RunAnalysis(TString plottag, TString tightelid, TString vetoelid, TString looseelid);
+
   float WeightCFEvent(std::vector<snu::KElectron> electrons, bool runchargeflip);  
   float IsDiLep(std::vector<snu::KElectron> electrons);
   bool LowMassCheckSignalRegion(  std::vector<snu::KElectron> electrons, std::vector<snu::KJet> jets, bool runcf);
@@ -30,8 +32,20 @@ class HNDiElectron : public AnalyzerCore {
   bool MidMassCheckSignalRegion(  std::vector<snu::KElectron> electrons, std::vector<snu::KJet> jets, bool runcf);
   bool HighMassCheckSignalRegion(  std::vector<snu::KElectron> electrons, std::vector<snu::KJet> jets, bool runcf);
 
-  void FillTriggerEfficiency(TString cut, float w, TString label,  std::vector<TString> list);
+  bool CheckSignalRegion( bool isss,  std::vector<snu::KElectron> electrons, std::vector<snu::KJet> jets, TString name, float w);
 
+  void FillTriggerEfficiency(TString cut, float w, TString label,  std::vector<TString> list);
+  void CheckJetsCloseToLeptons(std::vector<snu::KElectron> electrons, std::vector<snu::KJet> jets);
+
+  float GetTightWeight();
+  float  GetMediumWeight();
+  void GetSSSignalEfficiency(float w);
+  void GetOSSignalEfficiency(float w);
+  void GetTriggEfficiency();
+  void SignalValidation();
+  void RunAnalysis();
+  void OptimiseID(bool isss);
+  
 
  private:
   
