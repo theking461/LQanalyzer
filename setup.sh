@@ -363,6 +363,6 @@ fi
 
 echo "Running analysis from" $HOSTNAME " in directory: " $PWD
 
-cp ./muons_dz.sel CATConfig/SelectionConfig/muons.sel
+#cp ./muons_dz.sel CATConfig/SelectionConfig/muons.sel
 #clean up all emacs tmp files
 #clean_emacs

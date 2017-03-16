@@ -147,7 +147,8 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   
   //////////////////jet selection/////////////////////////////////
   std::vector<snu::KJet> jets =   GetJets("JET_HN");
-  int nbjet = NBJet(GetJets("JET_HN"));
+  //int nbjet = NBJet(GetJets("JET_HN"));
+  int nbjet = 0;
   FillHist("Njets", jets.size() ,weight, 0. , 5., 5);
   
   
@@ -161,7 +162,7 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
     //muon_id = "MUON_POG_LOOSE";
     muon_id = "MUON_HN_TRI_LOOSE";
   }
-  bool running_tri_mu = true;
+  bool running_tri_mu = false;
   if(running_tri_mu){
     //muid= BaseSelection::MUON_HN_TRI_TIGHT;
     muon_id = "MUON_HN_TRI_TIGHT";
@@ -174,11 +175,11 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   /// can call POGVeto/POGLoose/POGMedium/POGTight/ HNVeto/HNLoose/HNTight/NoCut/NoCutPtEta 
   std::vector<snu::KElectron> electrons = GetElectrons("ELECTRON_POG_TIGHT");
   std::vector<snu::KElectron> electrons_veto = GetElectrons("ELECTRON_HN_VETO");
-
+  
   std::vector<snu::KTruth> truthColl;
   eventbase->GetTruthSel()->Selection(truthColl);
   
-  cout << "truth " << truthColl.size() << endl;
+  //cout << "truth " << truthColl.size() << endl;
   
   TString dimuon_trigmuon_trig1="HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v";
   TString dimuon_trigmuon_trig2="HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v";
@@ -190,8 +191,7 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   trignames.push_back(dimuon_trigmuon_trig3);
   trignames.push_back(dimuon_trigmuon_trig4);
   bool trig_pass= PassTriggerOR(trignames);
-  
-  
+    
   bool mu50_pass = PassTrigger("HLT_Mu50_v");
   if(mu50_pass) FillHist("Mu50_eff", 1.5, 1., 0., 10., 10);
   if(mu50_pass || trig_pass) FillHist("Mu50_and_dimu_eff", 1.5, 1., 0., 10., 10);
@@ -216,7 +216,7 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
     //pileup_reweight = eventbase->GetEvent().PileUpWeight();
     //temp_pileup_reweight = TempPileupWeight(); 
     pileup_reweight = mcdata_correction -> PileupWeightByPeriod(eventbase->GetEvent());
-
+    
     trigger_ps = WeightByTrigger(trignames, TargetLumi);
     //trigger_sf = mcdata_correction -> TriggerScaleFactor(electrons, muons, "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
     
@@ -225,16 +225,19 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   }
   
   double weight_err = 0.;
-  if(k_running_nonprompt){
+  if(k_running_nonprompt & muons.size() == 2 && muons.at(0).Charge() == muons.at(1).Charge() ){
     current_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muons, "MUON_HN_TRI_TIGHT", 2, electrons, "ELECTRON_HN_TIGHT", 0);
-    weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muons, "MUON_HN_TRI_TIGHT", 2, electrons, "ELECTRON_HN_TIGHT", 0);
+    //weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muons, "MUON_HN_TRI_TIGHT", 2, electrons, "ELECTRON_HN_TIGHT", 0);
+    //cout << "fake_weight : " << current_weight << endl;
   }
-
+ 
+  
   
   float MET = eventbase->GetEvent().PFMET();
   bool prompt_match = false;
-  int n_bjet = NBJet(jets);
-  
+  //int n_bjet = NBJet(jets);
+  int n_bjet = 0;
+
   //if(trig_pass) FillHist("signal_eff", 2., 1., 0., 10., 10); 
 
   bool run_signal = false;
