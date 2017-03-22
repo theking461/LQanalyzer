@@ -191,7 +191,7 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   trignames.push_back(dimuon_trigmuon_trig3);
   trignames.push_back(dimuon_trigmuon_trig4);
   bool trig_pass= PassTriggerOR(trignames);
-    
+  
   bool mu50_pass = PassTrigger("HLT_Mu50_v");
   if(mu50_pass) FillHist("Mu50_eff", 1.5, 1., 0., 10., 10);
   if(mu50_pass || trig_pass) FillHist("Mu50_and_dimu_eff", 1.5, 1., 0., 10., 10);
