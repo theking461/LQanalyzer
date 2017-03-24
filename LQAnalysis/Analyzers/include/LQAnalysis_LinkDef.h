@@ -7,6 +7,7 @@
 #pragma link C++ nestedclass;
 
 #pragma link C++ class AnalyzerCore+;
+#pragma link C++ class HN_pair_MM+;
 #pragma link C++ class ExampleAnalyzer+;
 #pragma link C++ class HNDiElectron+;
 #pragma link C++ class HNDiElectronOptimisation+;
