@@ -96,6 +96,7 @@ void HNpairPlotsMM::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::ve
   //cout << "Fill N_s pass" << endl;
   
   if(muons.size() != 2) return;
+  if((muons[0]+muons[1]).M() < 10) return;
   if(electrons.size() != 0) return;
   //cout << "n_lepton cut pass" << endl;
   //cout << "Nmuon : " << muons.size() << endl;
