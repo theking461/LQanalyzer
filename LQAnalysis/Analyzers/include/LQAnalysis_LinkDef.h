@@ -14,4 +14,6 @@
 #pragma link C++ class HNEMu+;
 #pragma link C++ class GetFakeSF+;
 #pragma link C++ class PileupValidation+;
+#pragma link C++ class ChargeFlip_e+;
+#pragma link C++ class Closure_cf+;
 #endif // __CINT__
