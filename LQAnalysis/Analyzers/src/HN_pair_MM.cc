@@ -41,10 +41,7 @@ HN_pair_MM::HN_pair_MM() :  AnalyzerCore(), out_muons(0)  {
   MakeCleverHistograms(trilephist,"TriMuon_noB");
   MakeCleverHistograms(trilephist,"TriMuon_nomet");
   MakeCleverHistograms(trilephist,"TriMuonEl");
-  MakeCleverHistograms(hnpairmm,"basic_PU");
-  MakeCleverHistograms(hnpairmm,"basic_tempPU");
-  MakeCleverHistograms(hnpairmm,"Fake_CR_1");
-  
+   
 }
 
 
@@ -238,14 +235,6 @@ void HN_pair_MM::ExecuteEvents()throw( LQError ){
   }
   
   
-  FillCLHist(hnpairmm,"basic_PU", eventbase->GetEvent(), muons, electrons, jets, current_weight * pileup_reweight, n_bjet);
-  FillCLHist(hnpairmm,"basic_tempPU", eventbase->GetEvent(), muons, electrons,jets, current_weight * temp_pileup_reweight, n_bjet);
-  
-  if(muons.size() == 3){
-    FillCLHist(hnpairmm,"Fake_CR_1", eventbase->GetEvent(), muons, electrons, jets, current_weight * pileup_reweight, n_bjet);
-  }
-  
-
   return;
 }// End of execute event loop
 
