@@ -2,6 +2,7 @@
 bin/catconfig
 LQanalyzer/LQRun/txt
 LQRun/*/job_output/
+LQRun/*/*.sh
 LQLib/
 data/
 LQRun/*/runJob_1.C
