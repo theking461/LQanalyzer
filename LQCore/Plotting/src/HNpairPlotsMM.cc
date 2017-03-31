@@ -14,6 +14,8 @@ HNpairPlotsMM::HNpairPlotsMM(TString name): StdPlots(name){
   map_sig["h_Nmuons"]                 =     new TH1D("h_Nmuons_"           + name,"number of mu",5,0,5);
   map_sig["h_Nelectrons"]             =     new TH1D("h_Nelectrons_"           + name,"number of el",5,0,5);
   map_sig["h_nVertices"]              =     new TH1D("h_nVertices_"         + name,"number of even vertices",60,0.0,60.0);
+  map_sig["h_tri_Z_tag_dimu_mass"]              =     new TH1D("h_tri_Z_tag_dimu_mass_"         + name,"mass of Z-tagged dimuon",50,50.0,150.0);
+  map_sig["h_tri_non_Z_tag_pt"]              =     new TH1D("h_tri_non_Z_tag_pt_"         + name,"pt of non-Z-tagged muon",150,0.0,300.0);
   
   //OS CR
   map_sig["h_llmass_OS"]              =     new TH1D("h_OS_llmass_"          + name,"Invariant mass of the two leading os leptons",100,0,500);
@@ -86,6 +88,9 @@ HNpairPlotsMM::HNpairPlotsMM(TString name): StdPlots(name){
 
 void HNpairPlotsMM::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::vector<snu::KElectron>& electrons, std::vector<snu::KJet>& jets, Double_t weight, int nbjet) {
   
+  //cout << "################################" << endl;
+  
+  
   //int nbjet = NBJet(jets);
   Fill("h_Nmuons" ,muons.size(), weight);
   Fill("h_Nelectrons" ,electrons.size(), weight);
@@ -93,9 +98,60 @@ void HNpairPlotsMM::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::ve
   Fill("h_Nbjets", nbjet, weight);  
   Fill("h_Njets", jets.size(), weight);
   
+  //cout << "fill N's" << endl;
+  
   //cout << "Fill N_s pass" << endl;
   
+  //to estimate fake background at tri-muon region  
+  if(muons.size() == 3){
+    if(muons[0].Charge() ==  muons[1].Charge() == muons[2].Charge()) return;
+    double min_del_M = 9999.;
+    bool OS = false;
+    //cout << "1" << endl;
+    int i_mu_1, i_mu_2;
+    snu::KParticle mu_3 = muons[0] + muons[1] + muons[2];
+    //cout << "2"<< endl;
+
+    for(int i = 0; i < 2; i ++){
+      for(int j = i + 1; j < 3; j++){
+	//cout << "3.1"<< endl;
+	//cout << "i : " << i << ", j : " << j << endl;
+	if(muons[i].Charge() != muons[j].Charge()){
+	  //cout << "3"<< endl;
+	  snu::KParticle current_mm = muons[i] + muons[j];
+	  OS = true;
+	  //cout << "4"<< endl;
+
+	  if(fabs(current_mm.M() - 90) < min_del_M){
+	    min_del_M = fabs(current_mm.M() - 90);
+	    i_mu_1 = i;
+	    i_mu_2 = j;
+	    //mu_3 = mu_3 - muons[i] - muons[j];
+	  }//M < min					      
+	}//OS
+      }//for j
+    }//for i
+    //cout << "5"<< endl;
+    //cout << "mu_1 : " << i_mu_1 << ", mu_2 : " << i_mu_2 << endl;
+    //mu_3 = mu_3 - muons[i_mu_1] - muons[i_mu_2]; 
+    //snu::KParticle Z_tagged = muons[i_mu_1] + muons[i_mu_2];
+    
+    //double del_M = fabs(Z_tagged.M() - 90);
+
+    if(OS){
+      snu::KParticle Z_tagged = muons[i_mu_1] + muons[i_mu_2];
+      double del_M = fabs(Z_tagged.M() - 90);
+      mu_3 = mu_3 - muons[i_mu_1] - muons[i_mu_2];
+      if(del_M < 10){
+	Fill("h_tri_Z_tag_dimu_mass", Z_tagged.M(), weight);
+	Fill("h_tri_non_Z_tag_pt", mu_3.Pt(), weight);
+      }
+    }//if there is OS dimuon pair
+    
+  }
+
   if(muons.size() != 2) return;
+  
   if((muons[0]+muons[1]).M() < 10) return;
   if(electrons.size() != 0) return;
   //cout << "n_lepton cut pass" << endl;
