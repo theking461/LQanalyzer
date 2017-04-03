@@ -221,9 +221,11 @@ void Closure_cf::ExecuteEvents()throw( LQError ){
   
   if(electrons.at(0).Charge() == electrons.at(1).Charge()) return;
   
-  float cf_1 = CFRate_Run2(electrons.at(0), el_id);
-  float cf_2 = CFRate_Run2(electrons.at(1), el_id);
+  //float cf_1 = CFRate_Run2(electrons.at(0), el_id);
+  //float cf_2 = CFRate_Run2(electrons.at(1), el_id);
 
+  float cf_1 = 0.;
+  float cf_2 = 0.;
   //cout << "CFRate_Run2 1st : " << cf_rate << endl;
   
   if(electrons.at(0).Charge() != electrons.at(1).Charge() && trig_pass){
@@ -273,7 +275,7 @@ void Closure_cf::BeginCycle() throw( LQError ){
 Closure_cf::~Closure_cf() {
   
   Message("In Closure_cf Destructor" , INFO);
-  if(!k_isdata)delete reweightPU;
+  //if(!k_isdata)delete reweightPU;
   
 }
 

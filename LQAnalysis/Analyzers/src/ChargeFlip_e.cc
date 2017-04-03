@@ -82,7 +82,7 @@ void ChargeFlip_e::ExecuteEvents()throw( LQError ){
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
   
-  FillHist("signal_eff", 1., 1., 0., 10., 10);
+  FillHist("signal_eff", 1.5, 1., 0., 10., 10);
   
   //return;
   m_logger << DEBUG << "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
@@ -102,13 +102,20 @@ void ChargeFlip_e::ExecuteEvents()throw( LQError ){
   if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; //// Make cut on event wrt vertex
   
   TString dimuon_trigmuon_trig1="HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v";
-  TString di_electron_trig1="";
+  TString di_electron_trig1="HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v";
   
   vector<TString> trignames;
-  trignames.push_back(dimuon_trigmuon_trig1);
-        
+  trignames.push_back(di_electron_trig1);
+  
+  bool trig_pass= PassTriggerOR(trignames);
+  if(!trig_pass) return;
+  
+  FillHist("signal_eff", 2.5, 1., 0., 10., 10);
+  
+
+  
   //if(!PassTrigger(triggerslist, prescale)) return;
-  //FillCutFlow("TriggerCut", weight);
+  FillCutFlow("TriggerCut", weight);
   
   //FillHist("signal_eff", 1., 1., 0., 10., 10);
   
@@ -141,7 +148,7 @@ void ChargeFlip_e::ExecuteEvents()throw( LQError ){
   FillHist("Njets", jets.size() ,weight, 0. , 5., 5);
   
   TString muon_id = "MUON_POG_TIGHT";
-
+  
   //BaseSelection::ID muid = BaseSelection::MUON_POG_TIGHT;
   BaseSelection::ID muid = BaseSelection::MUON_HN_VETO;
   
@@ -156,26 +163,29 @@ void ChargeFlip_e::ExecuteEvents()throw( LQError ){
   
   /// can call POGVeto/POGLoose/POGMedium/POGTight/ HNVeto/HNLoose/HNTight/NoCut/NoCutPtEta 
   //std::vector<snu::KElectron> electrons = GetElectrons("ELECTRON_POG_TIGHT");
-  std::vector<snu::KElectron> electrons = GetElectrons("ELECTRON_HN_TIGHT");
+  //std::vector<snu::KElectron> electrons = GetElectrons("ELECTRON_HN_TIGHT");
+  std::vector<snu::KElectron> electrons = GetElectrons("ELECTRON_HN_LOWDXY_TIGHT");
   std::vector<snu::KElectron> electrons_veto = GetElectrons("ELECTRON_HN_VETO");
   TString el_id = "ELECTRON_HN_TIGHT";
   
   std::vector<snu::KTruth> truthColl;
   eventbase->GetTruthSel()->Selection(truthColl);
   
+  //cout << "1" << endl;
   
-
   if(electrons.size() != 2) return;
   if(muons.size() != 0) return;
   if(electrons.at(0).MotherPdgId() != 23 || electrons.at(1).MotherPdgId() != 23) return;
   snu::KParticle Z = electrons.at(0) + electrons.at(1);
   if(Z.M() > 100 || Z.M() < 80) return;
-  if(electrons.at(0).Pt() < 25 || electrons.at(1).Pt() < 20) return;
-  if(muons.size() != 0) return;
+  //if(electrons.at(0).Pt() < 25 || electrons.at(1).Pt() < 20) return;
+  if(electrons.at(0).Pt() < 25 || electrons.at(1).Pt() < 25) return;
   
   float MET = eventbase->GetEvent().PFMET();
   if(MET > 30) return;
   
+  FillHist("signal_eff", 3.5, 1., 0., 10., 10);
+
   
   //cout << "truthcoll " << truthColl.size() << endl;
   int mu_1_index, mu_2_index;
@@ -222,6 +232,9 @@ void ChargeFlip_e::ExecuteEvents()throw( LQError ){
     cout << "1st " << electrons.at(0).Charge() << ", " << electrons.at(0).Pt() << ", truth : " << truthColl.at(first_e_match_i).PdgId() << ", " << truthColl.at(first_e_match_i).Pt() << endl;
   cout << "2nd " << electrons.at(1).Charge() <<", " <<electrons.at(1).Pt() <<", truth : " <<truthColl.at(second_e_match_i).PdgId() << ", " << truthColl.at(second_e_match_i).Pt() << endl;
   */
+  
+  FillHist("signal_eff", 4.5, 1., 0., 10., 10);
+  
   
   bool e1_cf = electrons.at(0).MCIsCF();
   bool e2_cf = electrons.at(1).MCIsCF();
@@ -311,7 +324,7 @@ void ChargeFlip_e::BeginCycle() throw( LQError ){
 ChargeFlip_e::~ChargeFlip_e() {
   
   Message("In ChargeFlip_e Destructor" , INFO);
-  if(!k_isdata)delete reweightPU;
+  //if(!k_isdata)delete reweightPU;
   
 }
 
