@@ -16,4 +16,5 @@
 #pragma link C++ class PileupValidation+;
 #pragma link C++ class ChargeFlip_e+;
 #pragma link C++ class Closure_cf+;
+#pragma link C++ class ChargeFlip_2D+;
 #endif // __CINT__
